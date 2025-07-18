@@ -1,0 +1,327 @@
+{
+	"info": {
+		"_postman_id": "ea79e070-0e62-4413-a218-a2bf6a1ffc36",
+		"name": "Ecommerce Order Flow",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42784560"
+	},
+	"item": [
+		{
+			"name": "User Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Login Successful\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    let data = pm.response.json();\r",
+							"pm.expect(data).to.have.property(\"token\");\r",
+							"pm.environment.set(\"token\", data.token);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"mor_2314\",\r\n  \"password\": \"83r5^_\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/auth/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Products",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Fetched all products\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"    pm.test(\"Product list returned\", function () {\r",
+							"        let jsonData = pm.response.json();\r",
+							"        pm.environment.set(\"product_id\", jsonData[0].id);\r",
+							"    pm.expect(jsonData.length).to.be.above(0);\r",
+							"    });"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer{{token}} ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/products",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Product To Cart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"let res = pm.response.json();\r",
+							"\r",
+							"// ✅ Check if productId and quantity exist in the response\r",
+							"pm.test(\"Product added to cart successfully\", function () {\r",
+							"    pm.expect(res).to.have.property(\"id\");\r",
+							"});\r",
+							"\r",
+							"// ✅ Optionally save cart item ID to environment\r",
+							"pm.environment.set(\"cart_item_id\", res.id);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"productId\": \"{{product_id}}\",\r\n  \"quantity\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/carts",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"carts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cart Contents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"try{\r",
+							"let data = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Cart contains products\", function () {\r",
+							"    pm.expect(data).to.have.property(\"products\");\r",
+							"    pm.expect(data.products.length).to.be.above(0)});\r",
+							"}catch(e)\r",
+							"    {\r",
+							"      pm.test(\"Response is valid JSON\", function () {\r",
+							"         throw new Error(\"Invalid or empty JSON response: \" + e.message);\r",
+							"    });\r",
+							"\r",
+							"    }"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/carts/5",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"carts",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View Cart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"View Cart Successful\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"const responseBody = pm.response.json();\r",
+							"// Check if it's an array and has items\r",
+							"pm.test(\"Response is an array with items\", () => {\r",
+							"    pm.expect(responseBody).to.be.an(\"array\").that.is.not.empty;\r",
+							"});\r",
+							"\r",
+							"// Check first item has 'id'\r",
+							"pm.test(\" Fourth item has property 'products'\", () => {\r",
+							"    pm.expect(responseBody[3]).to.have.property(\"products\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/carts",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"carts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Place Order",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"address\": \"123 Main Street, City, ZIP\",\r\n  \"paymentMethod\": \"credit_card\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/order/checkout",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"order",
+						"checkout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
